@@ -1,7 +1,7 @@
 extrac <- function (){
 ############################################   EXTRACTOS      ##############################################################################################
 #Fijar el la ruta de trabajo
-	setwd("D:/github/appi001/appR/")
+	setwd("D:/github/appi001/appR/functions")
 
 #Blibliotecas requeridas
 	library(httr)    
@@ -25,7 +25,7 @@ extrac <- function (){
 	token <- paste(tok_type," ",tok,"",sep="")
 
 #Uso de la funcion para extraer datos con el Entity proporcionado
-	source("functions/function_get_collect.r")
+	source("function_get_collect.r")
 	data1f_collect <- get_records_url("https://mistr.operations.dynamics.com//data/RetailEodStatementAggregations?$filter=ErrorMessage%20ne%20%27null%27",token)
 	#head(data1f_collect)
 
@@ -37,11 +37,12 @@ extrac <- function (){
 	for (i in 1:sales_length) {
 
 		pv <- salesid[i]
-		source("functions/function_get_collect.r")
+	source("function_get_collect.r")
 			vec_consulta <- paste("https://mistr.operations.dynamics.com/data/SalesOrderHeadersV2?$filter=SalesOrderNumber%20eq%20%27",pv,"%27&$select=SalesOrderNumber,RequestedReceiptDate",sep="")
 			pv_con <- get_records_url(vec_consulta,token)
 		sales_rec <- rbind(sales_rec,pv_con)
 	}
+
 	sales_rec[,2]<-as.character(as.POSIXct(sales_rec[,2], format="%Y-%m-%d",tz="UTC"))
 
 
@@ -78,7 +79,7 @@ extrac <- function (){
 	stock <- as.numeric(stock)
 
 #Leer bd de productos de allproducts
-source("functions/function_get_collect.r")
+source("function_get_collect.r")
 	data2f_collect <- get_records_url("https://mistr.operations.dynamics.com/data/AllProducts?$select=ProductNumber,ProductName",token)
 	prod <- (data2f_collect)
 
@@ -102,7 +103,7 @@ f2<- c2 %>%
 		k6 <- f2$stock
 
 #funciÃ³n para asignar nombres a las tiendas
-source("functions/nametienda.r")
+source("nametienda.r")
 	k1 <- nametienda(k1)
 
 #Ordenar columnas del dataframe 
