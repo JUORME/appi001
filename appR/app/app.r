@@ -50,16 +50,15 @@ shinyApp(
 
 		observeEvent(input$idBtn1,{
 
-			a <- c("Mirana", "Slardar", "Lion")
-			b <- c("Agilidad", "Fuerza", "Inteligencia")
-			data <- rbind(a,b)
-			data <- as.data.frame(data)
-			names(data) <- c("Player1", "Player2", "Player3")
-			# source(paste(pathglo,"/functions/extractos.r",sep=""))
-			# data <- extrac()
+			# a <- c("Mirana", "Slardar", "Lion")
+			# b <- c("Agilidad", "Fuerza", "Inteligencia")
+			# data <- rbind(a,b)
+			# data <- as.data.frame(data)
+			# names(data) <- c("Player1", "Player2", "Player3")
+			source(paste(pathglo,"/functions/extractos.r",sep=""))
+			data <- extrac()
 
 			output$table0.output <- DT::renderDataTable({DT:: datatable(data)})
-
 			})		
 	}
 )	 
