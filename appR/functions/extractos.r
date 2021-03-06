@@ -31,17 +31,11 @@ extrac <- function (){
 
 #Extrae todos los pedidos de ventas 
 	salesid <- data1f_collect$SalesId
-	sales_length <- length(salesid)
-	sales_rec = NULL
-
-	for (i in 1:sales_length) {
-
-		pv <- salesid[i]
+	
+#Extraer datos de los pedidos de venta en status "Backorder"
 	source("function_get_collect.r")
-			vec_consulta <- paste("https://mistr.operations.dynamics.com/data/SalesOrderHeadersV2?$filter=SalesOrderNumber%20eq%20%27",pv,"%27&$select=SalesOrderNumber,RequestedReceiptDate",sep="")
-			pv_con <- get_records_url(vec_consulta,token)
-		sales_rec <- rbind(sales_rec,pv_con)
-	}
+	data2f_collect <- get_records_url("https://mistr.operations.dynamics.com/data/SalesOrderHeadersV2?$filter=SalesOrderStatus%20eq%20Microsoft.Dynamics.DataEntities.SalesStatus%27Backorder%27&$select=SalesOrderNumber,RequestedReceiptDate",token)
+	sales_rec <- data2f_collect
 
 	sales_rec[,2]<-as.character(as.POSIXct(sales_rec[,2], format="%Y-%m-%d",tz="UTC"))
 
@@ -49,18 +43,17 @@ extrac <- function (){
 #Extrae todos los numeros de la calumna mensaje
 	dat2 <- as.data.frame(cbind(data1f_collect[,2], data1f_collect[,5], data1f_collect[,7]))
 	names(dat2) <- c("StatementId", "SalesOrderNumber", "StoreNumber")
-	dat <- as.data.frame(data1f_collect$ErrorMessage)
-	dat<- str_extract_all(dat, "\\d+.\\d+\\S")
+	prt <- as.data.frame(data1f_collect$ErrorMessage)
+	dat<- str_extract_all(prt, "\\d+.\\d+\\S")
 
 ##Busqueda de datos cod productos
-	productos <- NULL
+	product <- NULL
 	k = seq(3,length(dat[[1]]), by=9)
 
 	for(i in k){
-		productos = rbind(productos, dat[[1]][i])
+		product = rbind(product, dat[[1]][i])
 	}
-	productos <- as.data.frame(productos)
-	names(productos) <- "productos"
+	names(product) <- "productos"
 
 ##Busqueda de datos cantidad faltante
 	c_req <- NULL
@@ -78,25 +71,34 @@ extrac <- function (){
 	}
 	stock <- as.numeric(stock)
 
-#Leer bd de productos de allproducts
-source("function_get_collect.r")
-	data2f_collect <- get_records_url("https://mistr.operations.dynamics.com/data/AllProducts?$select=ProductNumber,ProductName",token)
-	prod <- (data2f_collect)
+
+#Busqueda  de productos y  nombres de Entity All Products
+	prod_length <- length(product)
+	prod_rec = NULL
+	for (i in 1:prod_length) {
+
+		pdt <- product[i]
+	source("function_get_collect.r")
+			vec_consulta <- paste("https://mistr.operations.dynamics.com/data/AllProducts?$filter=ProductNumber%20eq%20%27",pdt,"%27&$select=ProductNumber,ProductName",sep="")
+			pdt_con <- get_records_url(vec_consulta,token)
+		prod_rec <- rbind(prod_rec,pdt_con)
+	}
+
 
 #Unir columnas
-	f1 <- cbind(dat2,productos,c_req,stock)
+	f1 <- cbind(dat2,product,c_req,stock)
 
 #Unir con el dataframe prod (contiene el nombre del producto Left Join)
-	c1 <- merge(f1,prod,by.x="productos",by.y="ProductNumber", all.x = TRUE)
+	c1 <- merge(f1,prod_rec,by.x="product",by.y="ProductNumber", all.x = TRUE)
 	c2 <- merge(c1,sales_rec,"SalesOrderNumber", all.x = TRUE)
 
 #Agrupar por columnas tienda y productos, nommbre de producto y Fecha
 f2<- c2 %>% 
-		group_by(StoreNumber,productos,ProductName,RequestedReceiptDate) %>%
+		group_by(StoreNumber,product,ProductName,RequestedReceiptDate) %>%
 		summarise(c_req = sum(c_req),stock = sum(stock))
 
 		k1 <- f2$StoreNumber
-		k2 <- f2$productos
+		k2 <- f2$product
 		k3 <- f2$ProductName
 		k4 <- f2$RequestedReceiptDate
 		k5 <- f2$c_req

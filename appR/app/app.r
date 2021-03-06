@@ -32,7 +32,10 @@ shinyApp(
 			navbarPage( "Trujillo Home",
 				tabPanel("Extractos",
 					sidebarPanel( style='margin-left:-10',
-						actionButton("idBtn1","Inventario insuficiente", class = "btn-danger")
+
+						actionButton("idBtn1","Inventario insuficiente", class = "btn-danger"),
+
+						downloadButton('idBtn2','download', class = "btn-success")
 					),
 					fluidRow(
 						column(6,
@@ -57,8 +60,16 @@ shinyApp(
 			# names(data) <- c("Player1", "Player2", "Player3")
 			source(paste(pathglo,"/functions/extractos.r",sep=""))
 			data <- extrac()
+			output$table0.output <- DT::renderDataTable({DT:: datatable(data)})		
+		})
+			
+			output$idBtn2 <- downloadHandler(
+				filename = function(){
+					paste("Extractos-",Sys.Date(),".csv",sep="")
+				},
+				content = function(file) {
+					write.csv(data, file)
+				})
 
-			output$table0.output <- DT::renderDataTable({DT:: datatable(data)})
-			})		
-	}
-)	 
+ 	}
+)
