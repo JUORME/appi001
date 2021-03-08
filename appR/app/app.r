@@ -29,12 +29,24 @@ library(stringr)
 
 shinyApp(
 	ui = fluidPage( theme = shinytheme("united"), useShinyjs(),
-			navbarPage( "Trujillo Home",
+
+			# list(
+			# 	#tags$head(HTML('<link rel="icon", href="img/trujillo.png", type="image/png">')),
+			# 	tags$style(HTML("
+			# 			.navbar {left: -20px; }
+			# 			.navbar-default .navbar-brand { color: #FFF;
+			# 											front-size: 16px;
+			# 											background-color: #E1120B ;}
+			# 		"))
+			# ),
+
+			#shinythemes::themeSelector(), #seleccionar themas libreria shinythemes
+			navbarPage( "Modulo Análisis de Inventario insuficiente - Trujillo investment 2021",
 				tabPanel("Extractos",
 					sidebarPanel( style='margin-left:-10',
 
 						actionButton("idBtn1","Inventario insuficiente", class = "btn-danger"),
-
+						br(),
 						downloadButton('idBtn2','download', class = "btn-success")
 					),
 					fluidRow(
@@ -51,6 +63,9 @@ shinyApp(
 		),	
 	server <- function(input, output){
 
+		source(paste(pathglo,"/functions/extractos.r",sep=""))
+		data <- extrac()
+
 		observeEvent(input$idBtn1,{
 
 			# a <- c("Mirana", "Slardar", "Lion")
@@ -58,17 +73,17 @@ shinyApp(
 			# data <- rbind(a,b)
 			# data <- as.data.frame(data)
 			# names(data) <- c("Player1", "Player2", "Player3")
-			source(paste(pathglo,"/functions/extractos.r",sep=""))
-			data <- extrac()
+
 			output$table0.output <- DT::renderDataTable({DT:: datatable(data)})		
 		})
-			
+		
 			output$idBtn2 <- downloadHandler(
+
 				filename = function(){
-					paste("Extractos-",Sys.Date(),".csv",sep="")
+					paste("Extractos-",Sys.Date(),".xlsx",sep="")
 				},
 				content = function(file) {
-					write.csv(data, file)
+					write.xlsx(data,file)
 				})
 
  	}
