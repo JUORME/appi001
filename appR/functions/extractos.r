@@ -1,7 +1,16 @@
 extrac <- function (){
 ############################################   EXTRACTOS      ##############################################################################################
+
 #Fijar el la ruta de trabajo
-	setwd("D:/github/appi001/appR/functions")
+ent <- 2
+if(ent == 1){
+	pathglo <- "D:/github/appi001/appR/functions"
+}else {
+	pathglo <- "/srv/shiny-server/appi001/appR/functions"
+}
+
+
+setwd(pathglo)
 
 #Blibliotecas requeridas
 	library(httr)    
@@ -43,32 +52,22 @@ extrac <- function (){
 #Extrae todos los numeros de la calumna mensaje
 	dat2 <- as.data.frame(cbind(data1f_collect[,2], data1f_collect[,5], data1f_collect[,7]))
 	names(dat2) <- c("StatementId", "SalesOrderNumber", "StoreNumber")
-	prt <- as.data.frame(data1f_collect$ErrorMessage)
+	prt <- unlist(as.data.frame(data1f_collect$ErrorMessage))
 	dat<- str_extract_all(prt, "\\d+.\\d+\\S")
 
-##Busqueda de datos cod productos
-	product <- NULL
-	k = seq(3,length(dat[[1]]), by=9)
 
-	for(i in k){
-		product = rbind(product, dat[[1]][i])
-	}
-	names(product) <- "productos"
+	product = NULL #Busqueda de datos cod productos
+	c_req = NULL  #Busqueda de datos cantidad faltante
+	stock <- NULL #Busqueda de datos Stock
 
-##Busqueda de datos cantidad faltante
-	c_req <- NULL
-	t = seq(5,length(dat[[1]]), by=9)
-	for(i in t){
-		c_req = rbind(c_req, dat[[1]][i])
+
+
+	for (i in 1:length(dat)) {
+		product = rbind(product, dat[[i]][3])
+		c_req = rbind(c_req, dat[[i]][5])
+		stock = rbind(stock, dat[[i]][6])	
 	}
 	c_req <- as.numeric(c_req)
-
-##Busqueda de datos Stock
-	stock <- NULL
-	h = seq(6,length(dat[[1]]), by=9)
-	for(i in h){
-		stock = rbind(stock, dat[[1]][i])
-	}
 	stock <- as.numeric(stock)
 
 
@@ -78,10 +77,10 @@ extrac <- function (){
 	for (i in 1:prod_length) {
 
 		pdt <- product[i]
-	source("function_get_collect.r")
-			vec_consulta <- paste("https://mistr.operations.dynamics.com/data/AllProducts?$filter=ProductNumber%20eq%20%27",pdt,"%27&$select=ProductNumber,ProductName",sep="")
-			pdt_con <- get_records_url(vec_consulta,token)
-		prod_rec <- rbind(prod_rec,pdt_con)
+		source("function_get_collect.r")
+				vec_consulta <- paste("https://mistr.operations.dynamics.com/data/AllProducts?$filter=ProductNumber%20eq%20%27",pdt,"%27&$select=ProductNumber,ProductName",sep="")
+				pdt_con <- get_records_url(vec_consulta,token)
+			prod_rec <- rbind(prod_rec,pdt_con)
 	}
 
 
@@ -92,10 +91,13 @@ extrac <- function (){
 	c1 <- merge(f1,prod_rec,by.x="product",by.y="ProductNumber", all.x = TRUE)
 	c2 <- merge(c1,sales_rec,"SalesOrderNumber", all.x = TRUE)
 
+
+
+
 #Agrupar por columnas tienda y productos, nommbre de producto y Fecha
 f2<- c2 %>% 
 		group_by(StoreNumber,product,ProductName,RequestedReceiptDate) %>%
-		summarise(c_req = sum(c_req),stock = sum(stock))
+		summarize(c_req = sum(c_req),stock = sum(stock))
 
 		k1 <- f2$StoreNumber
 		k2 <- f2$product
@@ -107,7 +109,7 @@ f2<- c2 %>%
 #funciÃ³n para asignar nombres a las tiendas
 source("nametienda.r")
 	k1 <- nametienda(k1)
-
+	k2 <- as.character(k2)
 #Ordenar columnas del dataframe 
 	f4 <- as.data.frame(cbind(k1,k2,k3,k4,k5,k6))
 	names(f4) <- c("Tienda", "CodPro", "Descripcion","Fecha","Requerido", "Stock")

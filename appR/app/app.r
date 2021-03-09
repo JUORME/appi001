@@ -1,10 +1,15 @@
-ent <- 1
+#####################################################################################
+#  Proyecto D365 FO                                                                 #
+#  Extracción de datos Stock Insuficiente                                           #
+#  Autor: Junior T. Ortiz Mejia                                                     #
+#  Fecha: 08/03/2021                                                                #                                                                              
+#####################################################################################
 
 options(encoding = "utf-8")
 options(shiny.maxRequestSize = 30*1024^2)
 options(warn=-1)
 
-ent <- 1
+ent <- 2
 if(ent == 1){
 	pathglo <- "D:/github/appi001/appR"
 }else {
@@ -28,26 +33,27 @@ library(stringr)
 
 
 shinyApp(
-	ui = fluidPage( theme = shinytheme("united"), useShinyjs(),
+	ui = fluidPage( theme = shinytheme("lumen"), useShinyjs(),
 
-			# list(
-			# 	#tags$head(HTML('<link rel="icon", href="img/trujillo.png", type="image/png">')),
-			# 	tags$style(HTML("
-			# 			.navbar {left: -20px; }
-			# 			.navbar-default .navbar-brand { color: #FFF;
-			# 											front-size: 16px;
-			# 											background-color: #E1120B ;}
-			# 		"))
-			# ),
+			list(
+				tags$head(HTML('<link rel="icon", href="http://181.65.149.162:4001/app014/img/cropped-fvtrujll02-32x32.png", type="image/png">')),
+				tags$style(HTML("
+						.navbar {left: -20px; }
+						.navbar-default .navbar-brand { color: #FFF;
+														front-size: 16px;
+														background-color: #E1120B ;}
+					"))
+			),
 
-			#shinythemes::themeSelector(), #seleccionar themas libreria shinythemes
+			shinythemes::themeSelector(), #seleccionar themas libreria shinythemes
 			navbarPage( "Modulo Análisis de Inventario insuficiente - Trujillo investment 2021",
 				tabPanel("Extractos",
 					sidebarPanel( style='margin-left:-10',
 
 						actionButton("idBtn1","Inventario insuficiente", class = "btn-danger"),
 						br(),
-						downloadButton('idBtn2','download', class = "btn-success")
+						downloadButton('idBtn2','Download', class = "btn-success"),
+						textOutput("selected_var")
 					),
 					fluidRow(
 						column(6,
@@ -63,20 +69,21 @@ shinyApp(
 		),	
 	server <- function(input, output){
 
+		shinyjs::hide("idBtn2")
+
 		source(paste(pathglo,"/functions/extractos.r",sep=""))
 		data <- extrac()
 
+		fechaid <- paste("Actualizado al ",Sys.Date(),sep="")
+
 		observeEvent(input$idBtn1,{
 
-			# a <- c("Mirana", "Slardar", "Lion")
-			# b <- c("Agilidad", "Fuerza", "Inteligencia")
-			# data <- rbind(a,b)
-			# data <- as.data.frame(data)
-			# names(data) <- c("Player1", "Player2", "Player3")
+			output$table0.output <- DT::renderDataTable({DT::datatable(data)}) 
+			output$selected_var <- renderText({fechaid})
+			shinyjs::show("idBtn2")
 
-			output$table0.output <- DT::renderDataTable({DT:: datatable(data)})		
 		})
-		
+
 			output$idBtn2 <- downloadHandler(
 
 				filename = function(){
@@ -86,5 +93,7 @@ shinyApp(
 					write.xlsx(data,file)
 				})
 
+
+		
  	}
 )
