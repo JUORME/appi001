@@ -72,23 +72,28 @@ setwd(pathglo)
 
 
 #Busqueda  de productos y  nombres de Entity All Products
-	prod_length <- length(product)
+
+	productsin  <- unique(product)
+	prod_length <- length(productsin)
 	prod_rec = NULL
 	for (i in 1:prod_length) {
 
-		pdt <- product[i]
+		pdt <- productsin[i]
 		source("function_get_collect.r")
 				vec_consulta <- paste("https://mistr.operations.dynamics.com/data/AllProducts?$filter=ProductNumber%20eq%20%27",pdt,"%27&$select=ProductNumber,ProductName",sep="")
 				pdt_con <- get_records_url(vec_consulta,token)
 			prod_rec <- rbind(prod_rec,pdt_con)
 	}
-
+	names(prod_rec) <- c("product","ProductName")
 
 #Unir columnas
 	f1 <- cbind(dat2,product,c_req,stock)
 
+	#f1[,4] <- as.numeric(f1[,4])
+	#prod_rec[,1] <- as.numeric(prod_rec[,1])
+
 #Unir con el dataframe prod (contiene el nombre del producto Left Join)
-	c1 <- merge(f1,prod_rec,by.x="product",by.y="ProductNumber", all.x = TRUE)
+	c1 <- merge(f1,prod_rec,"product", all.x = TRUE)
 	c2 <- merge(c1,sales_rec,"SalesOrderNumber", all.x = TRUE)
 
 
