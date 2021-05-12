@@ -1,4 +1,4 @@
-ent <- 2
+ent <- 1
 if(ent == 1){
 	pathglo <- "D:/github/appi001/appR"
 }else {
@@ -10,4 +10,4 @@ setwd(pathglo)
 library(shiny)
 library(shinydashboard)
 
-runApp("app", host="0.0.0.0", port=8050)
+runApp("app", host="0.0.0.0", port=8051)
