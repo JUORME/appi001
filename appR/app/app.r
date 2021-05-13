@@ -9,7 +9,7 @@ options(encoding = "utf-8")
 options(shiny.maxRequestSize = 30*1024^2)
 options(warn=-1)
 
-ent <- 2
+ent <- 1
 if(ent == 1){
 	pathglo <- "D:/github/appi001/appR"
 }else {
@@ -46,25 +46,18 @@ shinyApp(
 			),
 
 			shinythemes::themeSelector(), #seleccionar themas libreria shinythemes
-			navbarPage( "Modulo Análisis de Inventario insuficiente - Trujillo investment 2021",
-				tabPanel("Extractos",
+			navbarPage( "Modulo Análisis de Productos - Trujillo investment 2021",
+				tabPanel("Inventario Insuficiente",
 					sidebarPanel( style='margin-left:-10',
 
 						actionButton("idBtn1","Inventario insuficiente", class = "btn-danger"),
-						br(),
 						downloadButton('idBtn2','Download', class = "btn-success"),
 						textOutput("selected_var")
 					),
-					fluidRow(
-						column(6,
-							)
-						),
-					fluidRow(
-						column(7,
-							tabPanel("Tabla Inventario insuficiente",DT::dataTableOutput('table0.output'),style = 'font-size:90%')
-						)
-					)
-				)
+					fluidRow(column(6,)),
+					fluidRow(column(3,),column(6,DT::dataTableOutput('table0.output'),style = 'font-size:85%'))
+				),
+				tabPanel("Resumen")
 			)
 		),	
 	server <- function(input, output){
@@ -78,7 +71,7 @@ shinyApp(
 
 		observeEvent(input$idBtn1,{
 
-			output$table0.output <- DT::renderDataTable({DT::datatable(data)}) 
+			output$table0.output <- DT::renderDataTable({DT::datatable(data,options = list(pageLength = 20,autoWidth = TRUE))}) 
 			output$selected_var <- renderText({fechaid})
 			shinyjs::show("idBtn2")
 

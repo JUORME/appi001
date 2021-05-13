@@ -2,7 +2,7 @@ extrac <- function (){
 ############################################   EXTRACTOS      ##############################################################################################
 
 #Fijar el la ruta de trabajo
-ent <- 2
+ent <- 1
 if(ent == 1){
 	pathglo <- "D:/github/appi001/appR/functions"
 }else {
@@ -35,7 +35,7 @@ setwd(pathglo)
 
 #Uso de la funcion para extraer datos con el Entity proporcionado
 	source("function_get_collect.r")
-	data1f_collect <- get_records_url("https://mistr.operations.dynamics.com//data/RetailEodStatementAggregations?$filter=ErrorMessage%20ne%20%27null%27",token)
+	data1f_collect <- get_records_url("https://mistr.operations.dynamics.com//data/RetailEodStatementAggregations?$filter=ErrorMessage%20ne%20%27null%27&AggregationStatus%20eq%20%27InvoiceFailed%27",token)
 	#head(data1f_collect)
 
 #Extrae todos los pedidos de ventas 
@@ -49,7 +49,7 @@ setwd(pathglo)
 	sales_rec[,2]<-as.character(as.POSIXct(sales_rec[,2], format="%Y-%m-%d",tz="UTC"))
 
 
-#Extrae todos los numeros de la calumna mensaje
+#Extrae todos los numeros de la calumna messaje
 	dat2 <- as.data.frame(cbind(data1f_collect[,2], data1f_collect[,5], data1f_collect[,7]))
 	names(dat2) <- c("StatementId", "SalesOrderNumber", "StoreNumber")
 	prt <- unlist(as.data.frame(data1f_collect$ErrorMessage))
