@@ -1,2 +1,2 @@
 # appi001
-shiny app in R
+shiny [errores de extractos comerciales en Dynamics 365 FO ]

@@ -2,7 +2,7 @@ extrac <- function (){
 ############################################   EXTRACTOS      ##############################################################################################
 
 #Fijar el la ruta de trabajo
-ent <- 1
+ent <- 2
 if(ent == 1){
 	pathglo <- "D:/github/appi001/appR/functions"
 }else {
@@ -35,7 +35,7 @@ setwd(pathglo)
 
 #Uso de la funcion para extraer datos con el Entity proporcionado
 	source("function_get_collect.r")
-	data1f_collect <- get_records_url("https://mistr.operations.dynamics.com//data/RetailEodStatementAggregations?$filter=ErrorMessage%20ne%20%27null%27",token)
+	data1f_collect <- get_records_url("https://mistr.operations.dynamics.com//data/RetailEodStatementAggregations?$filter=ErrorMessage%20ne%20%27null%27&AggregationStatus%20eq%20%27InvoiceFailed%27",token)
 	#head(data1f_collect)
 
 #Extrae todos los pedidos de ventas 
@@ -49,7 +49,7 @@ setwd(pathglo)
 	sales_rec[,2]<-as.character(as.POSIXct(sales_rec[,2], format="%Y-%m-%d",tz="UTC"))
 
 
-#Extrae todos los numeros de la calumna mensaje
+#Extrae todos los numeros de la calumna messaje
 	dat2 <- as.data.frame(cbind(data1f_collect[,2], data1f_collect[,5], data1f_collect[,7]))
 	names(dat2) <- c("StatementId", "SalesOrderNumber", "StoreNumber")
 	prt <- unlist(as.data.frame(data1f_collect$ErrorMessage))
@@ -96,7 +96,18 @@ setwd(pathglo)
 	c1 <- merge(f1,prod_rec,"product", all.x = TRUE)
 	c2 <- merge(c1,sales_rec,"SalesOrderNumber", all.x = TRUE)
 
+#Data Frame para resumen de extractos calculados
+	c3 <- c2[,c(3,8)]
+	c4 <- unique(c3)
+	c5 <- str_split_fixed(unique(c3$StatementId),"-",n=Inf)
 
+	source("nametienda.r")
+	c6 <- nametienda(c5[,1])
+
+	c7 <- cbind(c6,c4)
+	names(c7) <- c("Tienda","Extracto","Fecha") 
+
+	c8 <- as.data.frame(c7 %>% tidyr::pivot_wider(names_from = Fecha, values_from = Fecha,values_fn = length))
 
 
 #Agrupar por columnas tienda y productos, nommbre de producto y Fecha
@@ -119,5 +130,8 @@ source("nametienda.r")
 	f4 <- as.data.frame(cbind(k1,k2,k3,k4,k5,k6))
 	names(f4) <- c("Tienda", "CodPro", "Descripcion","Fecha","Requerido", "Stock")
 
-	return(f4)
+#Unios de los dataFrames
+	f5 <- list(f4,c8)
+
+	return(f5)
 }

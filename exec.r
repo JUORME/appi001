@@ -1,4 +1,4 @@
-ent <- 1
+ent <- 2
 if(ent == 1){
 	pathglo <- "D:/github/appi001/appR"
 }else {
